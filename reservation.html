@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Réservation | AidePlus</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--cream:#f5f0e8;--dark:#1a1a2e;--accent:#e07a5f;--green:#81b29a;--green-light:#a8d5ba;--text:#3d3d3d;--text-light:#7a7a7a;--card-bg:#fffdf9}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden}
+nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(245,240,232,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(26,26,46,.08);padding:18px 40px;display:flex;justify-content:flex-start;align-items:center;gap:40px}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--dark);text-decoration:none}
+.logo span{color:var(--accent)}
+.nav-links a{text-decoration:none;color:var(--text);margin-left:32px;font-weight:500;font-size:.92rem;transition:color .3s}
+.nav-links a:hover{color:var(--accent)}
+
+#booking{padding:140px 40px 100px;max-width:1200px;margin:0 auto}
+.booking-intro{text-align:center;margin-bottom:50px}
+.booking-intro h1{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--dark);margin-bottom:12px}
+.booking-intro p{font-size:1.05rem;color:var(--text-light);margin-bottom:16px}
+.booking-intro .highlight{display:inline-flex;align-items:center;gap:8px;background:var(--green-light);color:var(--dark);padding:8px 20px;border-radius:30px;font-size:.92rem;font-weight:600}
+
+.steps{display:flex;justify-content:center;gap:40px;margin-bottom:50px}
+.step{display:flex;align-items:center;gap:12px;opacity:.4;transition:opacity .3s}
+.step.active{opacity:1}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.9rem}
+.step.active .step-num{background:var(--accent)}
+.step-label{font-size:.9rem;font-weight:600}
+
+.booking-content{background:var(--card-bg);border-radius:24px;padding:40px;box-shadow:0 8px 40px rgba(26,26,46,.08)}
+
+.section-hidden{display:none}
+.section-active{display:block}
+
+/* CALENDRIER */
+.calendar-header{margin-bottom:20px}
+.calendar-header h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--dark);margin-bottom:8px}
+.calendar-instruction{background:var(--cream);padding:12px 20px;border-radius:12px;font-size:.9rem;color:var(--text);margin-bottom:20px;border-left:4px solid var(--accent)}
+.calendar-instruction strong{color:var(--accent)}
+
+.calendar-grid{display:grid;grid-template-columns:100px repeat(7, 1fr);gap:2px;background:rgba(26,26,46,.1);border-radius:12px;overflow:hidden;width:100%}
+.calendar-cell{background:var(--card-bg);padding:14px 6px;text-align:center;font-size:.82rem}
+.calendar-header-cell{background:var(--dark);color:#fff;font-weight:600;padding:10px 6px;font-size:.78rem}
+.time-cell{background:var(--cream);font-weight:600;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.8rem;padding:14px 4px}
+.slot{cursor:pointer;transition:all .2s;position:relative;min-height:60px;display:flex;align-items:center;justify-content:center;background:var(--cream);border:2px solid transparent}
+.slot:hover{background:var(--green-light);transform:scale(1.02)}
+.slot.selected{background:var(--accent);color:#fff;font-weight:600;border-color:var(--dark)}
+.slot.selected::after{content:'✓';font-size:1.4rem}
+
+.selected-slots-summary{background:var(--cream);padding:16px 20px;border-radius:12px;margin-top:20px;min-height:60px}
+.selected-slots-summary h3{font-size:.9rem;font-weight:600;color:var(--dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.slots-tags{display:flex;flex-wrap:wrap;gap:8px}
+.slot-tag{background:var(--accent);color:#fff;padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.slot-tag .remove{cursor:pointer;font-weight:700;font-size:1rem;opacity:.8;transition:opacity .2s}
+.slot-tag .remove:hover{opacity:1}
+.no-slots{color:var(--text-light);font-size:.85rem;font-style:italic}
+
+/* FORM */
+.form-section{max-width:600px;margin:0 auto}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:.85rem;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:14px 16px;border:1.5px solid rgba(26,26,46,.13);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.93rem;background:var(--cream);color:var(--dark);transition:border-color .25s,box-shadow .25s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(224,122,95,.15)}
+.form-group textarea{resize:vertical;min-height:100px}
+
+.mode-pills{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.mode-pill{padding:16px;border:2px solid rgba(26,26,46,.12);border-radius:12px;background:var(--cream);cursor:pointer;text-align:center;transition:all .25s;font-weight:500}
+.mode-pill .pill-icon{font-size:1.8rem;display:block;margin-bottom:8px}
+.mode-pill:hover{border-color:var(--accent);transform:translateY(-2px)}
+.mode-pill.selected{border-color:var(--accent);background:rgba(224,122,95,.08);color:var(--accent)}
+
+.forfait-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.forfait-card{padding:20px;border:2px solid rgba(26,26,46,.1);border-radius:12px;cursor:pointer;transition:all .25s;background:var(--cream)}
+.forfait-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.forfait-card.selected{border-color:var(--accent);background:rgba(224,122,95,.08)}
+.forfait-card .price{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--dark);margin:8px 0}
+.forfait-card .label{font-size:.9rem;color:var(--text-light)}
+.forfait-card .badge{display:inline-block;background:var(--green-light);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;margin-top:8px}
+
+.btn-row{display:flex;gap:12px;justify-content:space-between;margin-top:30px}
+.btn{padding:14px 32px;border-radius:12px;font-weight:600;font-size:.95rem;cursor:pointer;transition:all .25s;border:none}
+.btn-secondary{background:var(--cream);color:var(--dark);border:2px solid rgba(26,26,46,.2)}
+.btn-secondary:hover{background:var(--dark);color:#fff}
+.btn-primary{background:var(--accent);color:#fff;flex:1}
+.btn-primary:hover{background:#d16a4e;transform:translateY(-2px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.confirmation{text-align:center;padding:40px 20px}
+.conf-icon{width:80px;height:80px;background:rgba(129,178,154,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 24px}
+.confirmation h3{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark);margin-bottom:12px}
+.confirmation p{color:var(--text-light);font-size:1rem;line-height:1.7;margin-bottom:20px}
+.whatsapp-note{display:inline-flex;align-items:center;gap:8px;background:rgba(37,211,102,.1);color:var(--dark);padding:12px 24px;border-radius:30px;font-size:.9rem;font-weight:600;margin-bottom:24px}
+.btn-whatsapp{display:inline-flex;align-items:center;justify-content:center;background:#25D366;color:#fff;padding:16px 40px;border-radius:50px;font-weight:600;font-size:1.05rem;text-decoration:none;transition:transform .3s,box-shadow .3s;box-shadow:0 6px 30px rgba(37,211,102,.4);cursor:pointer}
+.btn-whatsapp:hover{transform:translateY(-3px);box-shadow:0 8px 40px rgba(37,211,102,.6)}
+.conf-details{background:var(--cream);border-radius:16px;padding:24px;max-width:500px;margin:0 auto;text-align:left}
+.conf-details .detail-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(26,26,46,.08)}
+.conf-details .detail-row:last-child{border-bottom:none}
+.conf-details .detail-label{color:var(--text-light);font-size:.9rem}
+.conf-details .detail-value{font-weight:600;color:var(--dark);text-align:right}
+
+.whatsapp-float{position:fixed;bottom:30px;right:30px;width:60px;height:60px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;box-shadow:0 4px 20px rgba(37,211,102,.4);cursor:pointer;z-index:999;transition:transform .3s;text-decoration:none}
+.whatsapp-float:hover{transform:scale(1.1)}
+
+footer{background:var(--dark);color:rgba(255,255,255,.55);text-align:center;padding:48px 20px;font-size:.85rem;margin-top:80px}
+
+@media (max-width:768px){
+#booking{padding:120px 20px 60px}
+.booking-content{padding:24px}
+.steps{gap:20px;flex-wrap:wrap}
+.calendar-grid{grid-template-columns:70px repeat(7, 1fr);font-size:.7rem;overflow-x:auto}
+.time-cell,.calendar-cell{padding:8px 3px;font-size:.7rem}
+.calendar-header-cell{padding:8px 3px;font-size:.7rem}
+.forfait-cards,.mode-pills{grid-template-columns:1fr}
+nav{padding:16px 20px;flex-wrap:nowrap;gap:20px}
+.logo{font-size:1.2rem}
+.nav-links{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+.nav-links a{margin-left:12px;font-size:.75rem}
+}
+</style>
+</head>
+<body>
+<nav>
+<a href="index.html" class="logo">Aide<span>Plus</span></a>
+<div class="nav-links">
+<a href="index.html">Accueil</a>
+<a href="tarifs.html">Tarifs</a>
+<a href="autres-matieres.html">Autres matières</a>
+<a href="reservation.html">Réserver</a>
+</div>
+</nav>
+
+<a href="https://wa.me/33753794133" target="_blank" class="whatsapp-float" title="Contactez-nous sur WhatsApp">💬</a>
+
+<section id="booking">
+<div class="booking-intro">
+<h1>Réserver une séance</h1>
+<p>Indiquez vos disponibilités et complétez vos informations.</p>
+<div class="highlight">💬 Confirmation par WhatsApp sous 24h</div>
+</div>
+
+<div class="steps">
+<div class="step active" id="stepIndicator1">
+<div class="step-num">1</div>
+<div class="step-label">Disponibilités</div>
+</div>
+<div class="step" id="stepIndicator2">
+<div class="step-num">2</div>
+<div class="step-label">Formule</div>
+</div>
+<div class="step" id="stepIndicator3">
+<div class="step-num">3</div>
+<div class="step-label">Coordonnées</div>
+</div>
+</div>
+
+<div class="booking-content">
+<!-- ÉTAPE 1: CALENDRIER -->
+<div id="step1" class="section-active">
+<div class="calendar-header">
+<h2>Vos disponibilités</h2>
+<div class="calendar-instruction">
+<strong>💡 Sélectionnez plusieurs créneaux</strong> de 2h qui vous conviennent. Nous vous proposerons le premier disponible.
+</div>
+</div>
+<div class="calendar-grid" id="calendarGrid"></div>
+<div class="selected-slots-summary">
+<h3>Créneaux sélectionnés :</h3>
+<div class="slots-tags" id="slotsTags">
+<span class="no-slots">Aucun créneau sélectionné</span>
+</div>
+</div>
+<div class="btn-row">
+<button class="btn btn-primary" onclick="goToStep2()" id="btnStep1" disabled>Continuer →</button>
+</div>
+</div>
+
+<!-- ÉTAPE 2: FORMULE & MODE -->
+<div id="step2" class="section-hidden">
+<div class="form-section">
+<div class="form-group">
+<label>Mode de cours</label>
+<div class="mode-pills">
+<div class="mode-pill selected" onclick="selectMode(this, 'presentiel')">
+<span class="pill-icon">🏠</span>
+<span>Présentiel</span>
+</div>
+<div class="mode-pill" onclick="selectMode(this, 'visio')">
+<span class="pill-icon">💻</span>
+<span>Visioconférence</span>
+</div>
+</div>
+</div>
+
+<div class="form-group">
+<label>Formule</label>
+<div class="forfait-cards">
+<div class="forfait-card" onclick="selectForfait(this, 'unique', 60)">
+<div class="label">Séance unique</div>
+<div class="price">60€</div>
+<div class="label">2 heures</div>
+</div>
+<div class="forfait-card selected" onclick="selectForfait(this, 'forfait', 50)">
+<div class="label">Forfait</div>
+<div class="price">50€</div>
+<div class="label">2 heures / séance</div>
+<div class="badge">-10€ par séance</div>
+</div>
+</div>
+</div>
+</div>
+<div class="btn-row">
+<button class="btn btn-secondary" onclick="goToStep(1)">← Retour</button>
+<button class="btn btn-primary" onclick="goToStep3()">Continuer →</button>
+</div>
+</div>
+
+<!-- ÉTAPE 3: COORDONNÉES -->
+<div id="step3" class="section-hidden">
+<div class="form-section">
+<div class="form-group">
+<label>Prénom de l'élève</label>
+<input type="text" id="studentName" placeholder="Ex : Marie" />
+</div>
+<div class="form-group">
+<label>Votre prénom (parent)</label>
+<input type="text" id="parentName" placeholder="Ex : Sophie" />
+</div>
+<div class="form-group">
+<label>Niveau scolaire</label>
+<select id="level">
+<option value="">Choisir un niveau</option>
+<option>CP</option><option>CE1</option><option>CE2</option><option>CM1</option><option>CM2</option>
+<option>6ᵉ</option><option>5ᵉ</option><option>4ᵉ</option><option>3ᵉ</option><option>Seconde</option>
+</select>
+</div>
+<div class="form-group">
+<label>Numéro de téléphone</label>
+<input type="tel" id="phone" placeholder="+33 6 XX XX XX XX" />
+</div>
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="email" placeholder="votre@email.com" />
+</div>
+<div class="form-group">
+<label>Message (optionnel)</label>
+<textarea id="message" placeholder="Décrivez les difficultés ou posez vos questions..."></textarea>
+</div>
+</div>
+<div class="btn-row">
+<button class="btn btn-secondary" onclick="goToStep(2)">← Retour</button>
+<button class="btn btn-primary" onclick="submitBooking()">Préparer ma demande →</button>
+</div>
+</div>
+
+<!-- CONFIRMATION -->
+<div id="confirmation" class="section-hidden">
+<div class="confirmation">
+<div class="conf-icon">📝</div>
+<h3>Dernière étape !</h3>
+<p>Votre demande est prête. Cliquez sur le bouton ci-dessous pour nous l'envoyer directement via WhatsApp. Nous vous recontacterons sous 24h pour confirmer votre créneau.</p>
+<div class="whatsapp-note">💬 Réponse garantie sous 24h</div>
+<div class="conf-details" id="confDetails"></div>
+<div style="margin-top: 24px;">
+<a href="#" id="whatsappSendBtn" class="btn-whatsapp" target="_blank">
+<span style="font-size: 1.5rem; margin-right: 8px;">💬</span>
+Envoyer ma demande via WhatsApp
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<footer>
+<p style="margin-bottom:8px;font-size:1rem;color:rgba(255,255,255,.8);font-family:'Playfair Display',serif">AidePlus</p>
+<p>Aide aux devoirs en mathématiques — Du CP à la Seconde</p>
+<p style="margin-top:6px">📞 07 53 79 41 33</p>
+<p style="margin-top:16px;opacity:.45">© 2025 AidePlus. Tous droits réservés.</p>
+</footer>
+
+<script>
+let selectedSlots = [];
+let selectedMode = 'presentiel';
+let selectedForfait = 'forfait';
+let selectedPrice = 50;
+
+const timeSlots = ['13h-14h','14h-15h','15h-16h','16h-17h','17h-18h','18h-19h','19h-20h'];
+const daysOfWeek = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+  
+  grid.innerHTML += '<div class="calendar-header-cell">HORAIRE</div>';
+  daysOfWeek.forEach(day => {
+    grid.innerHTML += `<div class="calendar-header-cell">${day}</div>`;
+  });
+  
+  timeSlots.forEach((time, timeIdx) => {
+    grid.innerHTML += `<div class="time-cell">${time}</div>`;
+    for(let day = 0; day < 7; day++) {
+      const slotId = `slot-${day}-${timeIdx}`;
+      grid.innerHTML += `<div class="slot" onclick="toggleSlot(${day}, ${timeIdx}, '${time}', '${daysOfWeek[day]}')" id="${slotId}"></div>`;
+    }
+  });
+}
+
+function toggleSlot(day, timeIdx, time, dayName) {
+  const slotId = `slot-${day}-${timeIdx}`;
+  const slotEl = document.getElementById(slotId);
+  const slotKey = `${day}-${timeIdx}`;
+  
+  const index = selectedSlots.findIndex(s => s.key === slotKey);
+  if(index >= 0) {
+    selectedSlots.splice(index, 1);
+    slotEl.classList.remove('selected');
+  } else {
+    selectedSlots.push({key: slotKey, day: dayName, time: time});
+    slotEl.classList.add('selected');
+  }
+  
+  updateSlotsSummary();
+  document.getElementById('btnStep1').disabled = selectedSlots.length === 0;
+}
+
+function removeSlot(slotKey) {
+  const index = selectedSlots.findIndex(s => s.key === slotKey);
+  if(index >= 0) {
+    selectedSlots.splice(index, 1);
+    document.getElementById('slot-' + slotKey).classList.remove('selected');
+    updateSlotsSummary();
+    document.getElementById('btnStep1').disabled = selectedSlots.length === 0;
+  }
+}
+
+function updateSlotsSummary() {
+  const tagsContainer = document.getElementById('slotsTags');
+  if(selectedSlots.length === 0) {
+    tagsContainer.innerHTML = '<span class="no-slots">Aucun créneau sélectionné</span>';
+  } else {
+    tagsContainer.innerHTML = selectedSlots.map(slot => 
+      `<span class="slot-tag">${slot.day} ${slot.time}<span class="remove" onclick="removeSlot('${slot.key}')">×</span></span>`
+    ).join('');
+  }
+}
+
+function selectMode(el, mode) {
+  document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode = mode;
+}
+
+function selectForfait(el, type, price) {
+  document.querySelectorAll('.forfait-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedForfait = type;
+  selectedPrice = price;
+}
+
+function goToStep(step) {
+  document.querySelectorAll('[id^="step"], #confirmation').forEach(s => s.classList.add('section-hidden'));
+  document.querySelectorAll('[id^="step"], #confirmation').forEach(s => s.classList.remove('section-active'));
+  document.getElementById('step' + step).classList.remove('section-hidden');
+  document.getElementById('step' + step).classList.add('section-active');
+  
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('stepIndicator' + step).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function goToStep2() {
+  if(selectedSlots.length === 0) return;
+  goToStep(2);
+}
+
+function goToStep3() {
+  goToStep(3);
+}
+
+function submitBooking() {
+  const student = document.getElementById('studentName').value.trim();
+  const parent = document.getElementById('parentName').value.trim();
+  const level = document.getElementById('level').value;
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const message = document.getElementById('message').value.trim();
+  
+  if(!student || !parent || !level || !phone || !email) {
+    alert('Merci de remplir tous les champs obligatoires');
+    return;
+  }
+  
+  const modeLabel = selectedMode === 'presentiel' ? 'Présentiel' : 'Visioconférence';
+  const forfaitLabel = selectedForfait === 'unique' ? 'Séance unique' : 'Forfait multi-séances';
+  const slotsText = selectedSlots.map(s => `${s.day} ${s.time}`).join(', ');
+  
+  showConfirmation(student, parent, phone, email, level, slotsText, modeLabel, forfaitLabel);
+}
+
+function showConfirmation(student, parent, phone, email, level, slotsText, modeLabel, forfaitLabel) {
+  document.getElementById('confDetails').innerHTML = `
+    <div class="detail-row"><span class="detail-label">Élève</span><span class="detail-value">${student}</span></div>
+    <div class="detail-row"><span class="detail-label">Contact</span><span class="detail-value">${parent}<br>${phone}<br>${email}</span></div>
+    <div class="detail-row"><span class="detail-label">Niveau</span><span class="detail-value">${level}</span></div>
+    <div class="detail-row"><span class="detail-label">Disponibilités</span><span class="detail-value">${slotsText}</span></div>
+    <div class="detail-row"><span class="detail-label">Mode</span><span class="detail-value">${modeLabel}</span></div>
+    <div class="detail-row"><span class="detail-label">Formule</span><span class="detail-value">${forfaitLabel}<br>${selectedPrice}€</span></div>
+  `;
+  
+  // Créer le message WhatsApp
+  const messageText = `🎓 *Demande de cours - AidePlus*
+
+*ÉLÈVE*
+Prénom : ${student}
+Niveau : ${level}
+
+*PARENT/CONTACT*
+Prénom : ${parent}
+Téléphone : ${phone}
+Email : ${email}
+
+*DISPONIBILITÉS*
+${slotsText}
+
+*FORMULE*
+Mode : ${modeLabel}
+Formule : ${forfaitLabel}
+Prix : ${selectedPrice}€/séance
+
+Merci de me confirmer un créneau sous 24h !`;
+  
+  // Encoder le message pour l'URL
+  const encodedMessage = encodeURIComponent(messageText);
+  
+  // Créer le lien WhatsApp
+  const whatsappLink = `https://wa.me/33753794133?text=${encodedMessage}`;
+  
+  // Mettre à jour le bouton
+  document.getElementById('whatsappSendBtn').href = whatsappLink;
+  
+  document.querySelectorAll('[id^="step"]').forEach(s => s.classList.add('section-hidden'));
+  document.getElementById('confirmation').classList.remove('section-hidden');
+  
+  // Scroll smooth to confirmation section instead of top
+  document.getElementById('confirmation').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+renderCalendar();
+</script>
+</body>
+</html>
